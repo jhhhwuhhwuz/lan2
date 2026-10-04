@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>دفتر الكلمات اليومية - Cyber-Glass Bento</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Cairo', 'Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        cyber: {
+                            bg: '#070a14',
+                            card: 'rgba(15, 23, 42, 0.75)',
+                            border: 'rgba(56, 189, 248, 0.15)',
+                            accent: '#38bdf8',
+                            neon: '#6366f1'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Cairo', 'Inter', sans-serif;
+            background-color: #070a14;
+            color: #f8fafc;
+        }
+        /* Custom scrollbars */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(7, 10, 20, 0.5);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(56, 189, 248, 0.3);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(56, 189, 248, 0.5);
+        }
+        /* 3D Flashcard Flip utility */
+        .perspective-1000 {
+            perspective: 1000px;
+        }
+        .transform-style-3d {
+            transform-style: preserve-3d;
+        }
+        .backface-hidden {
+            backface-visibility: hidden;
+        }
+        .rotate-y-180 {
+            transform: rotateY(180deg);
+        }
+        .smooth-transition {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .cyber-glow {
+            box-shadow: 0 0 25px rgba(56, 189, 248, 0.12);
+        }
+        .neon-border {
+            border: 1px solid rgba(56, 189, 248, 0.25);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col selection:bg-cyan-500 selection:text-slate-950">
+
+    <header class="fixed top-0 left-0 right-0 z-40 bg-[#070a14]/85 backdrop-blur-2xl border-b border-cyan-500/10 shadow-xl shadow-cyan-950/20">
+        <div class="max-w-4xl mx-auto px-4 h-18 flex items-center justify-between relative py-3">
+            
+            <!-- Right Side: Logo & 3-Lines Menu Button (☰) -->
+            <div class="flex items-center gap-3.5 relative">
+                <!-- 3-Lines Menu Button ☰ -->
+                <div class="relative">
+                    <button id="menuBtn" onclick="toggleMenu()" class="p-3 rounded-2xl bg-gradient-to-b from-slate-900 to-slate-950 hover:from-slate-800 hover:to-slate-900 text-cyan-400 hover:text-cyan-300 transition-all duration-200 active:scale-95 shadow-lg cyber-glow neon-border flex items-center justify-center group" title="القائمة الرئيسية">
+                        <svg class="w-5 h-5 group-hover:rotate-90 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M4 6h16M4 12h16M4 18h16"></path>
+                        </svg>
+                    </button>
+
+                    <!-- Dropdown Menu (Directly underneath ☰) -->
+                    <div id="dropdownMenu" class="absolute top-full right-0 mt-3 w-60 bg-slate-900/95 backdrop-blur-2xl border border-cyan-500/20 rounded-2xl shadow-2xl py-2 hidden z-50 transform origin-top-right transition-all duration-200">
+                        <button onclick="openMenuFeature('statistics')" class="w-full text-right px-4 py-3 text-sm font-semibold text-slate-200 hover:text-cyan-300 hover:bg-cyan-500/10 flex items-center gap-3 transition-colors">
+                            <span class="text-base">📊</span> الإحصائيات الشاملة
+                        </button>
+                        <button onclick="openMenuFeature('map')" class="w-full text-right px-4 py-3 text-sm font-semibold text-slate-200 hover:text-cyan-300 hover:bg-cyan-500/10 flex items-center gap-3 transition-colors">
+                            <span class="text-base">🗺️</span> خريطة الكلمات الذكية
+                        </button>
+                        <button onclick="openMenuFeature('review')" class="w-full text-right px-4 py-3 text-sm font-semibold text-slate-200 hover:text-cyan-300 hover:bg-cyan-500/10 flex items-center gap-3 transition-colors">
+                            <span class="text-base">🧠</span> المراجعة والاختبار
+                        </button>
+                        <button onclick="openMenuFeature('dialects')" class="w-full text-right px-4 py-3 text-sm font-semibold text-slate-200 hover:text-cyan-300 hover:bg-cyan-500/10 flex items-center gap-3 transition-colors">
+                            <span class="text-base">🇬🇧</span> اللهجات ونطق الصوت
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Small Blue Logo -->
+                <div class="flex items-center gap-2.5 bg-cyan-500/10 px-3.5 py-2 rounded-2xl border border-cyan-500/20">
+                    <span class="text-lg animate-pulse">📘</span>
+                    <h1 class="font-bold text-base bg-gradient-to-r from-cyan-400 via-sky-400 to-indigo-400 bg-clip-text text-transparent tracking-wide">VocabCyber</h1>
+                </div>
+            </div>
+
+            <!-- Left Side: Add Button (+), Search (🔍), and Theme Toggle (🌙/☀️) / Expanded Search Input -->
+            <div class="flex items-center gap-3">
+                <!-- Glowing Add Button (+) -->
+                <button onclick="openAddModal()" class="px-4 py-2.5 rounded-2xl bg-gradient-to-r from-cyan-500 via-sky-500 to-indigo-600 hover:from-cyan-400 hover:to-indigo-500 text-slate-950 font-extrabold text-sm flex items-center gap-2 shadow-lg shadow-cyan-500/25 transition-all duration-200 active:scale-95 border border-cyan-300/30" title="إضافة كلمة جديدة">
+                    <span class="text-lg leading-none font-black">+</span>
+                    <span class="hidden sm:inline text-slate-950">إضافة كلمة</span>
+                </button>
+
+                <!-- Search Toggle Button 🔍 -->
+                <button id="searchToggleBtn" onclick="openNavbarSearch()" class="p-3 rounded-2xl bg-gradient-to-b from-slate-900 to-slate-950 hover:from-slate-800 hover:to-slate-900 text-cyan-400 hover:text-cyan-300 transition-all duration-200 active:scale-95 shadow-lg cyber-glow neon-border" title="بحث فوري">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                    </svg>
+                </button>
+
+                <!-- Theme Toggle / Navbar Search Container Slot -->
+                <div id="navbarSlot" class="flex items-center">
+                    <!-- Dark/Light Mode Toggle 🌙/☀️ -->
+                    <button id="themeToggleBtn" onclick="toggleTheme()" class="p-3 rounded-2xl bg-gradient-to-b from-slate-900 to-slate-950 hover:from-slate-800 hover:to-slate-900 text-cyan-400 hover:text-cyan-300 transition-all duration-200 active:scale-95 shadow-lg cyber-glow neon-border" title="تبديل الوضع">
+                        <span id="themeIcon" class="text-sm">🌙</span>
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </header>
+
+    <main class="max-w-4xl w-full mx-auto px-4 pt-28 pb-28 flex-1 flex flex-col gap-6">
+
+        <!-- Main Tabs: كلماتي / المصطلحات / فلاش كارد (Pill-shaped & Horizontally scrollable) -->
+        <div class="overflow-x-auto no-scrollbar py-1">
+            <div class="flex items-center gap-3 min-w-max border-b border-cyan-500/10 pb-4 relative">
+                <button id="tabWords" onclick="switchTab('words')" class="relative px-7 py-3 rounded-2xl font-bold text-base smooth-transition active:scale-95 bg-gradient-to-r from-cyan-500 to-indigo-600 text-slate-950 shadow-xl shadow-cyan-500/20">
+                    كلماتي
+                </button>
+                <button id="tabIdioms" onclick="switchTab('idioms')" class="relative px-7 py-3 rounded-2xl font-bold text-base smooth-transition active:scale-95 text-slate-300 hover:text-cyan-300 hover:bg-slate-900/80 bg-slate-900/50 border border-cyan-500/15">
+                    المصطلحات (Idioms)
+                </button>
+                <button id="tabFlashcards" onclick="switchTab('flashcards')" class="relative px-7 py-3 rounded-2xl font-bold text-base smooth-transition active:scale-95 text-slate-300 hover:text-cyan-300 hover:bg-slate-900/80 bg-slate-900/50 border border-cyan-500/15">
+                    🧠 فلاش كارد
+                </button>
+            </div>
+        </div>
+
+        <!-- Category Filters (Compact & Minimalist - visible in words/idioms tabs) -->
+        <div id="filtersWrapper" class="overflow-x-auto no-scrollbar py-1 flex items-center gap-3">
+            <button onclick="setFilter('All')" class="filter-btn px-4.5 py-2.5 rounded-xl text-xs font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 smooth-transition shadow-md" data-category="All">الكل</button>
+            <button onclick="setFilter('Noun')" class="filter-btn px-4.5 py-2.5 rounded-xl text-xs font-bold bg-slate-900/80 text-slate-300 border border-cyan-500/15 hover:bg-slate-800 smooth-transition" data-category="Noun">أسماء Nouns</button>
+            <button onclick="setFilter('Verb')" class="filter-btn px-4.5 py-2.5 rounded-xl text-xs font-bold bg-slate-900/80 text-slate-300 border border-cyan-500/15 hover:bg-slate-800 smooth-transition" data-category="Verb">أفعال Verbs</button>
+            <button onclick="setFilter('Adjective')" class="filter-btn px-4.5 py-2.5 rounded-xl text-xs font-bold bg-slate-900/80 text-slate-300 border border-cyan-500/15 hover:bg-slate-800 smooth-transition" data-category="Adjective">صفات Adjectives</button>
+            <button onclick="setFilter('Adverb')" class="filter-btn px-4.5 py-2.5 rounded-xl text-xs font-bold bg-slate-900/80 text-slate-300 border border-cyan-500/15 hover:bg-slate-800 smooth-transition" data-category="Adverb">ظروف Adverbs</button>
+        </div>
+
+        <!-- Words / Idioms List View -->
+        <div id="wordsView" class="flex-1 flex flex-col gap-4">
+            <div class="flex items-center justify-between text-sm text-slate-300 px-1 pt-1">
+                <span id="sectionSubtitle" class="font-bold text-lg text-slate-100">الكلمات المحفوظة</span>
+                <span id="itemCountBadge" class="bg-slate-900 border border-cyan-500/20 px-3.5 py-1.5 rounded-xl text-xs font-bold text-cyan-400 shadow-sm">0 عنصر</span>
+            </div>
+
+            <div id="wordsListContainer" class="space-y-4">
+                <!-- Dynamic Items -->
+            </div>
+
+            <!-- Empty State -->
+            <div id="emptyState" class="hidden flex-col items-center justify-center py-24 text-center bg-slate-900/40 border border-cyan-500/15 rounded-3xl shadow-2xl">
+                <span class="text-5xl mb-4">📭</span>
+                <p class="text-slate-200 text-base font-bold">لا توجد كلمات مطابقة للبحث أو التصنيف</p>
+            </div>
+        </div>
+
+        <div id="flashcardsView" class="hidden flex-1 flex flex-col gap-6 items-center justify-center py-8">
+            <div class="w-full flex items-center justify-between text-base text-slate-200 px-1">
+                <span id="flashcardCounter" class="font-bold text-cyan-400">بطاقة رقم 1 من 1</span>
+                <button onclick="toggleCardMeaning()" class="text-cyan-400 hover:text-cyan-300 font-bold underline text-sm transition-colors">إظهار المعنى بضغطة زر</button>
+            </div>
+
+            <!-- 3D Flip Card Container -->
+            <div class="w-full max-w-lg h-96 perspective-1000 cursor-pointer" onclick="flipFlashcard()">
+                <div id="flashcardInner" class="w-full h-full relative transition-transform duration-500 transform-style-3d shadow-2xl rounded-3xl">
+                    <!-- Card Front -->
+                    <div class="absolute inset-0 bg-gradient-to-b from-slate-900 via-slate-900 to-[#0b1329] border border-cyan-500/30 rounded-3xl p-10 flex flex-col items-center justify-center text-center backface-hidden shadow-2xl cyber-glow">
+                        <span id="fcCategory" class="text-xs font-bold px-4 py-2 bg-cyan-500/10 text-cyan-300 rounded-2xl mb-6 border border-cyan-500/30">Category</span>
+                        <h3 id="fcWord" class="text-5xl font-extrabold text-cyan-400 mb-6 tracking-tight">Word</h3>
+                        <p class="text-slate-400 text-sm font-medium">انقر للقلب وعرض المعنى والملاحظات 👆</p>
+                    </div>
+                    <!-- Card Back -->
+                    <div class="absolute inset-0 bg-gradient-to-b from-slate-900 via-slate-900 to-[#0b1329] border border-indigo-500/30 rounded-3xl p-10 flex flex-col items-center justify-center text-center backface-hidden rotate-y-180 shadow-2xl">
+                        <span class="text-xs font-bold px-4 py-2 bg-indigo-500/10 text-indigo-300 rounded-2xl mb-5 border border-indigo-500/30">المعنى والشرح المفصل</span>
+                        <h3 id="fcMeaning" class="text-3xl font-bold text-slate-100 mb-4">المعنى</h3>
+                        <p id="fcThoughts" class="text-base text-slate-300 line-clamp-3 leading-relaxed">الملاحظات...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Flashcard Controls -->
+            <div class="flex items-center gap-5 mt-4">
+                <button onclick="prevFlashcard()" class="px-7 py-3.5 bg-slate-900 hover:bg-slate-800 border border-cyan-500/20 text-slate-200 text-sm font-bold rounded-2xl smooth-transition active:scale-95 shadow-lg">السابقة</button>
+                <button onclick="speakCurrentFlashcard()" class="p-4 bg-gradient-to-r from-cyan-500 to-indigo-600 hover:from-cyan-400 hover:to-indigo-500 text-slate-950 rounded-2xl text-lg shadow-xl shadow-cyan-500/25 smooth-transition active:scale-95 font-black" title="نطق الكلمة">🔊</button>
+                <button onclick="nextFlashcard()" class="px-7 py-3.5 bg-slate-900 hover:bg-slate-800 border border-cyan-500/20 text-slate-200 text-sm font-bold rounded-2xl smooth-transition active:scale-95 shadow-lg">التالية</button>
+            </div>
+        </div>
+
+    </main>
+
+    <div id="addModal" class="fixed inset-0 bg-slate-950/85 backdrop-blur-xl z-50 hidden flex items-center justify-center p-4">
+        <div class="max-w-lg w-full bg-slate-900/95 backdrop-blur-2xl border border-cyan-500/30 rounded-3xl p-8 shadow-2xl space-y-5 cyber-glow">
+            <div class="flex items-center justify-between border-b border-cyan-500/15 pb-4">
+                <h3 class="font-bold text-lg text-slate-100 flex items-center gap-2.5"><span>📝</span> إضافة كلمة جديدة</h3>
+                <button onclick="closeAddModal()" class="text-slate-400 hover:text-white text-base p-1.5 rounded-xl bg-slate-800/50">✕</button>
+            </div>
+            
+            <form id="wordForm" onsubmit="addWord(event)" class="space-y-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-cyan-300 mb-1.5">الكلمة الإنجليزية</label>
+                        <input type="text" id="engWordInput" required placeholder="e.g., Resilient" class="w-full bg-slate-950/90 border border-cyan-500/20 rounded-2xl px-4 py-3.5 text-sm text-slate-100 focus:outline-none focus:border-cyan-400 shadow-inner">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-cyan-300 mb-1.5">المعنى بالعربي</label>
+                        <input type="text" id="arMeaningInput" required placeholder="مثال: مرن / قادر على التعافي" class="w-full bg-slate-950/90 border border-cyan-500/20 rounded-2xl px-4 py-3.5 text-sm text-slate-100 focus:outline-none focus:border-cyan-400 shadow-inner">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-cyan-300 mb-1.5">التصنيف القواعدي</label>
+                        <select id="categoryInput" class="w-full bg-slate-950/90 border border-cyan-500/20 rounded-2xl px-4 py-3.5 text-sm text-slate-100 focus:outline-none focus:border-cyan-400 shadow-inner">
+                            <option value="Noun">اسم (Noun)</option>
+                            <option value="Verb">فعل (Verb)</option>
+                            <option value="Adjective">صفة (Adjective)</option>
+                            <option value="Adverb">ظرف (Adverb)</option>
+                            <option value="Idiom">مصطلح (Idiom)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-cyan-300 mb-1.5">الشرح أو المثال (write your thoughts here...)</label>
+                    <textarea id="thoughtsInput" rows="3.5" placeholder="write your thoughts here..." class="w-full bg-slate-950/90 border border-cyan-500/20 rounded-2xl px-4 py-3.5 text-sm text-slate-100 focus:outline-none focus:border-cyan-400 resize-none shadow-inner"></textarea>
+                </div>
+
+                <div class="flex items-center justify-end gap-3 pt-3">
+                    <button type="button" onclick="closeAddModal()" class="px-6 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm font-bold rounded-2xl smooth-transition">إلغاء</button>
+                    <button type="submit" class="px-7 py-3 bg-gradient-to-r from-cyan-500 to-indigo-600 hover:from-cyan-400 hover:to-indigo-500 text-slate-950 font-extrabold text-sm rounded-2xl shadow-lg shadow-cyan-500/30 smooth-transition">حفظ الكلمة</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Word Modal -->
+    <div id="editModal" class="fixed inset-0 bg-slate-950/85 backdrop-blur-xl z-50 hidden flex items-center justify-center p-4">
+        <div class="max-w-lg w-full bg-slate-900/95 backdrop-blur-2xl border border-cyan-500/30 rounded-3xl p-8 shadow-2xl space-y-5 cyber-glow">
+            <div class="flex items-center justify-between border-b border-cyan-500/15 pb-4">
+                <h3 class="font-bold text-lg text-slate-100 flex items-center gap-2.5"><span>✏</span> تعديل الكلمة</h3>
+                <button onclick="closeEditModal()" class="text-slate-400 hover:text-white text-base p-1.5 rounded-xl bg-slate-800/50">✕</button>
+            </div>
+            
+            <form id="editWordForm" onsubmit="saveEditedWord(event)" class="space-y-4">
+                <input type="hidden" id="editWordId">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-cyan-300 mb-1.5">الكلمة الإنجليزية</label>
+                        <input type="text" id="editEngInput" required class="w-full bg-slate-950/90 border border-cyan-500/20 rounded-2xl px-4 py-3.5 text-sm text-slate-100 focus:outline-none focus:border-cyan-400 shadow-inner">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-cyan-300 mb-1.5">المعنى بالعربي</label>
+                        <input type="text" id="editArInput" required class="w-full bg-slate-950/90 border border-cyan-500/20 rounded-2xl px-4 py-3.5 text-sm text-slate-100 focus:outline-none focus:border-cyan-400 shadow-inner">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-cyan-300 mb-1.5">الشرح أو المثال</label>
+                    <textarea id="editThoughtsInput" rows="3.5" class="w-full bg-slate-950/90 border border-cyan-500/20 rounded-2xl px-4 py-3.5 text-sm text-slate-100 focus:outline-none focus:border-cyan-400 resize-none shadow-inner"></textarea>
+                </div>
+
+                <div class="flex items-center justify-end gap-3 pt-3">
+                    <button type="button" onclick="closeEditModal()" class="px-6 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm font-bold rounded-2xl smooth-transition">إلغاء</button>
+                    <button type="submit" class="px-7 py-3 bg-gradient-to-r from-cyan-500 to-indigo-600 hover:from-cyan-400 hover:to-indigo-500 text-slate-950 font-extrabold text-sm rounded-2xl shadow-lg shadow-cyan-500/30 smooth-transition">تحديث التعديلات</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- General Info Modal (For Menu Features) -->
+    <div id="infoModal" class="fixed inset-0 bg-slate-950/85 backdrop-blur-xl z-50 hidden flex items-center justify-center p-4">
+        <div class="max-w-md w-full bg-slate-900/95 backdrop-blur-2xl border border-cyan-500/30 rounded-3xl p-8 shadow-2xl space-y-5 relative cyber-glow">
+            <button onclick="closeInfoModal()" class="absolute top-5 left-5 text-slate-400 hover:text-white text-base p-1.5 rounded-xl bg-slate-800/50">✕</button>
+            <h3 id="infoTitle" class="text-xl font-extrabold text-cyan-400 mb-2">عنوان</h3>
+            <p id="infoContent" class="text-sm text-slate-200 leading-relaxed">محتوى...</p>
+            <div class="flex justify-end pt-3">
+                <button onclick="closeInfoModal()" class="px-7 py-3 bg-gradient-to-r from-cyan-500 to-indigo-600 hover:from-cyan-400 hover:to-indigo-500 text-slate-950 font-extrabold text-sm rounded-2xl shadow-lg shadow-cyan-500/35 smooth-transition">حسناً فهمت</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed bottom-8 left-1/2 -translate-x-1/2 bg-slate-900/95 backdrop-blur-2xl border border-cyan-500/40 text-cyan-300 px-6 py-3.5 rounded-2xl shadow-2xl text-xs font-extrabold flex items-center gap-2.5 transform translate-y-20 opacity-0 transition-all duration-300 z-50 pointer-events-none cyber-glow">
+        <span id="toastMsg">تم الحفظ بنجاح</span>
+    </div>
+
+    <script>
+        let currentTab = 'words'; // 'words', 'idioms', 'flashcards'
+        let currentFilter = 'All';
+        let currentSearchQuery = '';
+        let expandedCardId = null;
+        let flashcardIndex = 0;
+        let isFlashcardFlipped = false;
+        let isSearchOpen = false;
+
+        let wordsData = JSON.parse(localStorage.getItem('vocab_notebook_cyber_v4')) || [
+            { id: 1, eng: 'Resilient', ar: 'مرن / قادر على التعافي', category: 'Adjective', thoughts: 'She is a resilient leader who overcomes high-pressure challenges easily.' },
+            { id: 2, eng: 'Benevolent', ar: 'خير / محب للخير', category: 'Adjective', thoughts: 'A benevolent donor contributed millions to establish the research facility.' },
+            { id: 3, eng: 'Break the ice', ar: 'كسر الجليد / بدء الحديث', category: 'Idiom', thoughts: 'He told a clever joke to break the ice at the tense corporate meeting.' },
+            { id: 4, eng: 'Innovation', ar: 'ابتكار / إبداع', category: 'Noun', thoughts: 'Continuous digital innovation is key to modern enterprise success.' }
+        ];
+
+        window.addEventListener('DOMContentLoaded', () => {
+            renderContent();
+            window.addEventListener('click', (e) => {
+                const menuBtn = document.getElementById('menuBtn');
+                const dropdownMenu = document.getElementById('dropdownMenu');
+                if (!menuBtn.contains(e.target) && !dropdownMenu.contains(e.target)) {
+                    dropdownMenu.classList.add('hidden');
+                }
+            });
+        });
+
+        // Toggle 3-Lines Menu Dropdown
+        function toggleMenu() {
+            const dropdown = document.getElementById('dropdownMenu');
+            dropdown.classList.toggle('hidden');
+        }
+
+        // Open Menu Feature Modals
+        function openMenuFeature(feature) {
+            document.getElementById('dropdownMenu').classList.add('hidden');
+            const titleEl = document.getElementById('infoTitle');
+            const contentEl = document.getElementById('infoContent');
+
+            if (feature === 'statistics') {
+                const total = wordsData.length;
+                const nouns = wordsData.filter(w => w.category === 'Noun').length;
+                const verbs = wordsData.filter(w => w.category === 'Verb').length;
+                const adjectives = wordsData.filter(w => w.category === 'Adjective').length;
+                const idioms = wordsData.filter(w => w.category === 'Idiom').length;
+
+                titleEl.textContent = '📊 إحصائيات الدفتــر الرقمي';
+                contentEl.innerHTML = `إجمالي العناصر المحفوظة: <b>${total}</b><br><br>
+                - الأسماء (Nouns): ${nouns}<br>
+                - الأفعال (Verbs): ${verbs}<br>
+                - الصفات (Adjectives): ${adjectives}<br>
+                - المصطلحات (Idioms): ${idioms}`;
+            } else if (feature === 'map') {
+                titleEl.textContent = '🗺️ خريطة الكلمات الذكية';
+                contentEl.textContent = 'استكشف شبكة الروابط السياقية بين مفرداتك اليومية وتصنيفاتها القواعدية ضمن منظومة تفاعلية متكاملة.';
+            } else if (feature === 'review') {
+                titleEl.textContent = '🧠 المراجعة والاختبار الذكي';
+                contentEl.textContent = 'ابدأ جلسة مراجعة ذكية عبر البطاقات التفاعلية لترسيخ الكلمات في ذاكرتك طويلة المدى.';
+            } else if (feature === 'dialects') {
+                titleEl.textContent = '🇬🇧 اللهجات ونطق الصوت';
+                contentEl.textContent = 'دعم كامل للصوتيات واللهجة الأمريكية والبريطانية مع تقنية التوليد الصوتي المدمجة بالمتصفح.';
+            }
+
+            document.getElementById('infoModal').classList.remove('hidden');
+        }
+
+        function closeInfoModal() {
+            document.getElementById('infoModal').classList.add('hidden');
+        }
+
+        // Theme Toggle (Cyber Dark / Light Neon)
+        function toggleTheme() {
+            const html = document.documentElement;
+            const themeIcon = document.getElementById('themeIcon');
+            if (html.classList.contains('dark')) {
+                html.classList.remove('dark');
+                themeIcon.textContent = '☀️';
+                showToast('تم تفعيل الوضع الفاتح ✨');
+            } else {
+                html.classList.add('dark');
+                themeIcon.textContent = '🌙';
+                showToast('تم تفعيل وضع السايبر الداكن 🌌');
+            }
+        }
+
+        // Navbar Search Toggle (Smoothly replacing theme toggle on click)
+        function openNavbarSearch() {
+            isSearchOpen = true;
+            const slot = document.getElementById('navbarSlot');
+            const searchToggleBtn = document.getElementById('searchToggleBtn');
+            searchToggleBtn.classList.add('hidden');
+
+            slot.innerHTML = `
+                <div class="flex items-center gap-2 animate-fadeIn">
+                    <input type="text" id="headerSearchInput" oninput="handleSearchInput(this.value)" placeholder="ابحث في الكلمات والمعاني..." autofocus class="w-40 sm:w-56 bg-slate-950 border border-cyan-500/40 rounded-2xl px-3.5 py-2 text-xs font-semibold text-slate-100 focus:outline-none focus:border-cyan-400 shadow-inner">
+                    <button onclick="closeNavbarSearch()" class="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-cyan-400 hover:text-white text-xs font-bold transition-all active:scale-95" title="إغلاق البحث">✕</button>
+                </div>
+            `;
+            document.getElementById('headerSearchInput').focus();
+        }
+
+        function closeNavbarSearch() {
+            isSearchOpen = false;
+            const slot = document.getElementById('navbarSlot');
+            const searchToggleBtn = document.getElementById('searchToggleBtn');
+            searchToggleBtn.classList.remove('hidden');
+
+            slot.innerHTML = `
+                <button id="themeToggleBtn" onclick="toggleTheme()" class="p-3 rounded-2xl bg-gradient-to-b from-slate-900 to-slate-950 hover:from-slate-800 hover:to-slate-900 text-cyan-400 hover:text-cyan-300 transition-all duration-200 active:scale-95 shadow-lg cyber-glow neon-border" title="تبديل الوضع">
+                    <span id="themeIcon" class="text-sm">${document.documentElement.classList.contains('dark') ? '🌙' : '☀️'}</span>
+                </button>
+            `;
+            currentSearchQuery = '';
+            renderContent();
+        }
+
+        function handleSearchInput(query) {
+            currentSearchQuery = query.toLowerCase().trim();
+            renderContent();
+        }
+
+        // Tabs Switching
+        function switchTab(tab) {
+            currentTab = tab;
+            const tabWords = document.getElementById('tabWords');
+            const tabIdioms = document.getElementById('tabIdioms');
+            const tabFlashcards = document.getElementById('tabFlashcards');
+            const filtersWrapper = document.getElementById('filtersWrapper');
+            const wordsView = document.getElementById('wordsView');
+            const flashcardsView = document.getElementById('flashcardsView');
+
+            [tabWords, tabIdioms, tabFlashcards].forEach(t => {
+                t.className = "relative px-7 py-3 rounded-2xl font-bold text-base smooth-transition active:scale-95 text-slate-300 hover:text-cyan-300 hover:bg-slate-900/80 bg-slate-900/50 border border-cyan-500/15";
+            });
+
+            if (tab === 'words') {
+                tabWords.className = "relative px-7 py-3 rounded-2xl font-bold text-base smooth-transition active:scale-95 bg-gradient-to-r from-cyan-500 to-indigo-600 text-slate-950 shadow-xl shadow-cyan-500/20";
+                filtersWrapper.classList.remove('hidden');
+                wordsView.classList.remove('hidden');
+                flashcardsView.classList.add('hidden');
+                document.getElementById('sectionSubtitle').textContent = "الكلمات المحفوظة";
+            } else if (tab === 'idioms') {
+                tabIdioms.className = "relative px-7 py-3 rounded-2xl font-bold text-base smooth-transition active:scale-95 bg-gradient-to-r from-cyan-500 to-indigo-600 text-slate-950 shadow-xl shadow-cyan-500/20";
+                filtersWrapper.classList.add('hidden');
+                wordsView.classList.remove('hidden');
+                flashcardsView.classList.add('hidden');
+                document.getElementById('sectionSubtitle').textContent = "المصطلحات المحفوظة (Idioms)";
+            } else if (tab === 'flashcards') {
+                tabFlashcards.className = "relative px-7 py-3 rounded-2xl font-bold text-base smooth-transition active:scale-95 bg-gradient-to-r from-cyan-500 to-indigo-600 text-slate-950 shadow-xl shadow-cyan-500/20";
+                filtersWrapper.classList.add('hidden');
+                wordsView.classList.add('hidden');
+                flashcardsView.classList.remove('hidden');
+                flashcardIndex = 0;
+                isFlashcardFlipped = false;
+                updateFlashcardView();
+            }
+            expandedCardId = null;
+            renderContent();
+        }
+
+        // Category Filter
+        function setFilter(cat) {
+            currentFilter = cat;
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                if (btn.getAttribute('data-category') === cat) {
+                    btn.className = "filter-btn px-4.5 py-2.5 rounded-xl text-xs font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 smooth-transition shadow-md";
+                } else {
+                    btn.className = "filter-btn px-4.5 py-2.5 rounded-xl text-xs font-bold bg-slate-900/80 text-slate-300 border border-cyan-500/15 hover:bg-slate-800 smooth-transition";
+                }
+            });
+            renderContent();
+        }
+
+        // Render Content
+        function renderContent() {
+            if (currentTab === 'flashcards') {
+                updateFlashcardView();
+                return;
+            }
+
+            const container = document.getElementById('wordsListContainer');
+            const emptyState = document.getElementById('emptyState');
+            const itemCountBadge = document.getElementById('itemCountBadge');
+
+            let filtered = wordsData.filter(item => {
+                if (currentTab === 'words' && item.category === 'Idiom') return false;
+                if (currentTab === 'idioms' && item.category !== 'Idiom') return false;
+                if (currentTab === 'words' && currentFilter !== 'All' && item.category !== currentFilter) return false;
+
+                if (currentSearchQuery) {
+                    const matchEng = item.eng.toLowerCase().includes(currentSearchQuery);
+                    const matchAr = item.ar.toLowerCase().includes(currentSearchQuery);
+                    const matchCat = item.category.toLowerCase().includes(currentSearchQuery);
+                    const matchThoughts = item.thoughts.toLowerCase().includes(currentSearchQuery);
+                    if (!matchEng && !matchAr && !matchCat && !matchThoughts) return false;
+                }
+                return true;
+            });
+
+            itemCountBadge.textContent = `${filtered.length} عنصر`;
+
+            if (filtered.length === 0) {
+                container.innerHTML = '';
+                emptyState.classList.remove('hidden');
+                emptyState.classList.add('flex');
+                return;
+            }
+
+            emptyState.classList.add('hidden');
+            emptyState.classList.remove('flex');
+
+            container.innerHTML = filtered.map(item => {
+                const isExpanded = expandedCardId === item.id;
+                return `
+                    <div onclick="toggleCard(${item.id})" class="group bg-slate-900/70 hover:bg-slate-900/90 border ${isExpanded ? 'border-cyan-400/60 shadow-2xl shadow-cyan-500/10' : 'border-cyan-500/15'} rounded-2xl p-5 smooth-transition cursor-pointer">
+                        <div class="flex items-center justify-between gap-4">
+                            <div class="flex items-center gap-3.5 min-w-0 flex-1">
+                                <div class="min-w-0 flex-1">
+                                    <div class="flex items-center gap-3 flex-wrap">
+                                        <span class="font-extrabold text-cyan-400 text-lg sm:text-xl truncate">${escapeHtml(item.eng)}</span>
+                                        <span class="text-slate-200 text-base font-semibold truncate max-w-[220px] sm:max-w-md">- ${escapeHtml(item.ar)}</span>
+                                    </div>
+                                    <p class="text-xs sm:text-sm text-slate-400 truncate mt-1.5">${escapeHtml(item.thoughts)}</p>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-center gap-3 shrink-0">
+                                <span class="text-xs font-bold px-3.5 py-1.5 bg-slate-800/90 border border-cyan-500/20 rounded-xl text-cyan-300 shadow-sm">${item.category}</span>
+                                <button onclick="event.stopPropagation(); speakWord('${escapeHtml(item.eng)}')" class="p-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-cyan-300 hover:text-white smooth-transition active:scale-95 shadow-md" title="نطق الكلمة">
+                                    🔊
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Expanded Action Tray -->
+                        <div class="${isExpanded ? 'block' : 'hidden'} mt-5 pt-5 border-t border-cyan-500/15 space-y-4" onclick="event.stopPropagation()">
+                            <div class="bg-slate-950/90 p-4 rounded-2xl border border-cyan-500/20 shadow-inner">
+                                <span class="text-xs text-cyan-400 block mb-1.5 font-bold">الشرح أو المثال المفصل:</span>
+                                <p class="text-sm sm:text-base text-slate-200 leading-relaxed">${escapeHtml(item.thoughts)}</p>
+                            </div>
+
+                            <div class="flex flex-wrap items-center justify-between gap-3 pt-1">
+                                <!-- Grammatical Category Dropdown Selector (Not typing) -->
+                                <div class="flex items-center gap-2.5">
+                                    <span class="text-xs text-slate-300 font-bold">تعديل التصنيف:</span>
+                                    <select onchange="updateCardCategory(${item.id}, this.value)" class="bg-slate-950 border border-cyan-500/30 text-xs font-bold text-cyan-300 rounded-xl px-3.5 py-2.5 focus:outline-none focus:border-cyan-400 shadow-inner">
+                                        <option value="Noun" ${item.category === 'Noun' ? 'selected' : ''}>Noun (اسم)</option>
+                                        <option value="Verb" ${item.category === 'Verb' ? 'selected' : ''}>Verb (فعل)</option>
+                                        <option value="Adjective" ${item.category === 'Adjective' ? 'selected' : ''}>Adjective (صفة)</option>
+                                        <option value="Adverb" ${item.category === 'Adverb' ? 'selected' : ''}>Adverb (ظرف)</option>
+                                        <option value="Idiom" ${item.category === 'Idiom' ? 'selected' : ''}>Idiom (مصطلح)</option>
+                                    </select>
+                                </div>
+
+                                <!-- Action Buttons -->
+                                <div class="flex items-center gap-2.5">
+                                    <button onclick="copyWordItem('${escapeHtml(item.eng)}', '${escapeHtml(item.ar)}', '${escapeHtml(item.thoughts)}')" class="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold rounded-xl flex items-center gap-1.5 smooth-transition shadow-sm">
+                                        <span>📋</span> نسخ
+                                    </button>
+                                    <button onclick="openEditModal(${item.id})" class="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-cyan-400 text-xs font-bold rounded-xl flex items-center gap-1.5 smooth-transition shadow-sm">
+                                        <span>✏️</span> تعديل
+                                    </button>
+                                    <button onclick="deleteWord(${item.id})" class="px-4 py-2.5 bg-rose-500/15 hover:bg-rose-500/25 text-rose-400 text-xs font-bold rounded-xl flex items-center gap-1.5 smooth-transition shadow-sm">
+                                        <span>🗑️</span> حذف
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Toggle Card Expansion
+        function toggleCard(id) {
+            if (expandedCardId === id) {
+                expandedCardId = null;
+            } else {
+                expandedCardId = id;
+            }
+            renderContent();
+        }
+
+        // Update Category via Dropdown Selector
+        function updateCardCategory(id, newCategory) {
+            const item = wordsData.find(w => w.id === id);
+            if (item) {
+                item.category = newCategory;
+                localStorage.setItem('vocab_notebook_cyber_v4', JSON.stringify(wordsData));
+                showToast('تم تحديث التصنيف القواعدي بنجاح ✨');
+                renderContent();
+            }
+        }
+
+        // Copy Word Item
+        function copyWordItem(eng, ar, thoughts) {
+            const textToCopy = `${eng} : ${ar}\nالشرح: ${thoughts}`;
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(textToCopy).then(() => {
+                    showToast('تم نسخ الكلمة والتفاصيل للحافظة 📋');
+                }).catch(() => {
+                    fallbackCopy(textToCopy);
+                });
+            } else {
+                fallbackCopy(textToCopy);
+            }
+        }
+
+        function fallbackCopy(text) {
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            document.body.appendChild(textarea);
+            textarea.select();
+            try {
+                document.execCommand('copy');
+                showToast('تم النسخ بنجاح 📋');
+            } catch (err) {
+                showToast('فشل النسخ');
+            }
+            document.body.removeChild(textarea);
+        }
+
+        // Flashcards Logic
+        function getActiveFlashcards() {
+            return wordsData;
+        }
+
+        function updateFlashcardView() {
+            const list = getActiveFlashcards();
+            const counter = document.getElementById('flashcardCounter');
+            const fcWord = document.getElementById('fcWord');
+            const fcMeaning = document.getElementById('fcMeaning');
+            const fcCategory = document.getElementById('fcCategory');
+            const fcThoughts = document.getElementById('fcThoughts');
+
+            if (list.length === 0) {
+                counter.textContent = 'لا توجد بطاقات متاحة';
+                fcWord.textContent = 'أضف كلمات';
+                fcMeaning.textContent = '-';
+                fcCategory.textContent = '-';
+                fcThoughts.textContent = '-';
+                return;
+            }
+
+            if (flashcardIndex >= list.length) flashcardIndex = 0;
+            if (flashcardIndex < 0) flashcardIndex = list.length - 1;
+
+            const item = list[flashcardIndex];
+            counter.textContent = `بطاقة رقم ${flashcardIndex + 1} من ${list.length}`;
+            fcWord.textContent = item.eng;
+            fcMeaning.textContent = item.ar;
+            fcCategory.textContent = item.category;
+            fcThoughts.textContent = item.thoughts;
+
+            isFlashcardFlipped = false;
+            document.getElementById('flashcardInner').style.transform = 'rotateY(0deg)';
+        }
+
+        function flipFlashcard() {
+            isFlashcardFlipped = !isFlashcardFlipped;
+            const inner = document.getElementById('flashcardInner');
+            if (isFlashcardFlipped) {
+                inner.style.transform = 'rotateY(180deg)';
+            } else {
+                inner.style.transform = 'rotateY(0deg)';
+            }
+        }
+
+        function toggleCardMeaning() {
+            flipFlashcard();
+        }
+
+        function nextFlashcard() {
+            const list = getActiveFlashcards();
+            if (list.length === 0) return;
+            flashcardIndex = (flashcardIndex + 1) % list.length;
+            updateFlashcardView();
+        }
+
+        function prevFlashcard() {
+            const list = getActiveFlashcards();
+            if (list.length === 0) return;
+            flashcardIndex = (flashcardIndex - 1 + list.length) % list.length;
+            updateFlashcardView();
+        }
+
+        function speakCurrentFlashcard() {
+            const list = getActiveFlashcards();
+            if (list.length === 0) return;
+            speakWord(list[flashcardIndex].eng);
+        }
+
+        // Add Modal
+        function openAddModal() {
+            document.getElementById('addModal').classList.remove('hidden');
+        }
+
+        function closeAddModal() {
+            document.getElementById('addModal').classList.add('hidden');
+            document.getElementById('wordForm').reset();
+        }
+
+        function addWord(e) {
+            e.preventDefault();
+            const eng = document.getElementById('engWordInput').value.trim();
+            const ar = document.getElementById('arMeaningInput').value.trim();
+            const category = document.getElementById('categoryInput').value;
+            const thoughts = document.getElementById('thoughtsInput').value.trim();
+
+            if (!eng || !ar) return;
+
+            const newWord = {
+                id: Date.now(),
+                eng,
+                ar,
+                category,
+                thoughts: thoughts || 'لا توجد تفاصيل إضافية.'
+            };
+
+            wordsData.unshift(newWord);
+            localStorage.setItem('vocab_notebook_cyber_v4', JSON.stringify(wordsData));
+            
+            closeAddModal();
+            renderContent();
+            showToast('تم حفظ الكلمة بنجاح في الدفتــر ✨');
+        }
+
+        // Edit Modal
+        function openEditModal(id) {
+            const item = wordsData.find(w => w.id === id);
+            if (!item) return;
+
+            document.getElementById('editWordId').value = item.id;
+            document.getElementById('editEngInput').value = item.eng;
+            document.getElementById('editArInput').value = item.ar;
+            document.getElementById('editThoughtsInput').value = item.thoughts;
+
+            document.getElementById('editModal').classList.remove('hidden');
+        }
+
+        function closeEditModal() {
+            document.getElementById('editModal').classList.add('hidden');
+        }
+
+        function saveEditedWord(e) {
+            e.preventDefault();
+            const id = parseInt(document.getElementById('editWordId').value);
+            const eng = document.getElementById('editEngInput').value.trim();
+            const ar = document.getElementById('editArInput').value.trim();
+            const thoughts = document.getElementById('editThoughtsInput').value.trim();
+
+            const item = wordsData.find(w => w.id === id);
+            if (item) {
+                item.eng = eng;
+                item.ar = ar;
+                item.thoughts = thoughts;
+                localStorage.setItem('vocab_notebook_cyber_v4', JSON.stringify(wordsData));
+                closeEditModal();
+                renderContent();
+                showToast('تم تحديث الكلمة بنجاح ✏️');
+            }
+        }
+
+        // Delete Word
+        function deleteWord(id) {
+            wordsData = wordsData.filter(w => w.id !== id);
+            localStorage.setItem('vocab_notebook_cyber_v4', JSON.stringify(wordsData));
+            if (expandedCardId === id) expandedCardId = null;
+            renderContent();
+            showToast('تم حذف الكلمة نهائياً 🗑️');
+        }
+
+        // Speech Synthesis 🔊
+        function speakWord(text) {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'en-US';
+                utterance.rate = 0.9;
+                window.speechSynthesis.speak(utterance);
+                showToast(`جارٍ نطق: ${text} 🔊`);
+            } else {
+                showToast('خاصية النطق غير مدعومة في متصفحك');
+            }
+        }
+
+        // Toast Notification helper
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toastMsg').textContent = msg;
+            toast.classList.remove('translate-y-20', 'opacity-0', 'pointer-events-none');
+            setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0', 'pointer-events-none');
+            }, 2500);
+        }
+
+        // HTML Escape helper
+        function escapeHtml(str) {
+            return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+        }
+    </script>
+</body>
+</html>
