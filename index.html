@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="ar">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#0b1020">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="دفتر الكلمات">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>دفتر الكلمات اليومي - النسخة المتقدمة الذكية</title>
+<style>
+:root{
+  --bg:#0b1020;
+  --bar:rgba(11,16,32,.84);
+  --surface:#121a2e;
+  --surface-2:#18223a;
+  --line:#243050;
+  --fg:#e8eefc;
+  --muted:#8e9bba;
+  --accent:#5ea6ff;
+  --accent-ink:#06142b;
+  --accent-soft:rgba(94,166,255,.14);
+  --good:#3ecf8e;
+  --good-bg:rgba(62,207,142,.14);
+  --bad:#ff6b7a;
+  --bad-bg:rgba(255,107,122,.14);
+  --overlay:rgba(4,8,18,.62);
+  --mark-bg:#ffd93d;
+  --mark-fg:#1b1500;
+  --shadow:0 14px 34px rgba(0,0,0,.5);
+  --font-ui:system-ui,sans-serif;
+  --font-en:system-ui,sans-serif;
+  color-scheme:dark;
+}
+:root[data-theme="light"]{
+  --bg:#eff3fb;
+  --bar:rgba(239,243,251,.88);
+  --surface:#ffffff;
+  --surface-2:#f2f5fc;
+  --line:#d8e0f1;
+  --fg:#0e1a33;
+  --muted:#5b6988;
+  --accent:#1c6ee0;
+  --accent-ink:#ffffff;
+  --accent-soft:rgba(28,110,224,.1);
+  --good:#12805a;
+  --good-bg:rgba(18,128,90,.12);
+  --bad:#c9304a;
+  --bad-bg:rgba(201,48,74,.1);
+  --overlay:rgba(14,26,51,.38);
+  --shadow:0 14px 32px rgba(20,40,90,.16);
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font:400 15px/1.6 var(--font-ui);-webkit-tap-highlight-color:transparent;transition:background .3s,color .3s}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none;padding:0}
+button:focus-visible,.row:focus-visible,textarea:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+h2{margin:0}
+
+@keyframes press{0%{transform:scale(1)}40%{transform:scale(.9)}100%{transform:scale(1)}}
+.tap{animation:press .2s ease-out}
+
+.bar{position:fixed;top:0;left:0;right:0;z-index:30;padding-top:env(safe-area-inset-top,0px);background:var(--bar);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+.bar-in{position:relative;height:56px;max-width:640px;margin:0 auto;padding-inline:16px;display:flex;align-items:center}
+.left{position:relative;z-index:1;flex:1;min-width:0;display:flex;align-items:center}
+.ibtn{flex:none;width:40px;height:40px;border-radius:12px;background:var(--surface);border:1px solid var(--line);display:grid;place-items:center;font-size:18px;line-height:1;overflow:hidden;transition:background .2s,border-color .2s}
+.ibtn:hover{border-color:var(--accent)}
+.ibtn svg,.snd svg{display:block;width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.snd{color:var(--accent)}
+.snd svg{width:18px;height:18px}
+#btnSearch{margin-right:8px}
+.bar.searching #btnSearch{background:var(--accent-soft);border-color:var(--accent)}
+.bar.searching #btnTheme{width:0;opacity:0;border-width:0;pointer-events:none}
+.sfield{flex:0 0 0;min-width:0;opacity:0;overflow:hidden;display:flex;align-items:center;gap:8px;pointer-events:none;transition:flex-grow .32s,opacity .22s}
+.bar.searching .sfield{flex:1 1 0;opacity:1;pointer-events:auto}
+.pill{flex:1;min-width:0;height:40px;padding-inline:12px;border-radius:12px;background:var(--surface);border:1px solid var(--line);display:flex;align-items:center;gap:8px}
+.pill input{flex:1;min-width:0;background:transparent;border:0;outline:0;color:var(--fg);font:500 16px var(--font-ui)}
+.pill input::placeholder{color:var(--muted)}
+.title{position:absolute;left:0;right:0;text-align:center;pointer-events:none;font-weight:800;font-size:17px}
+.title b{color:var(--accent);font-size:19px}
+.bar.searching .title{opacity:0}
+.menu-anchor{position:relative;z-index:2;flex:none;margin-left:8px}
+#btnMenu{font-size:20px}
+.menu{position:absolute;top:calc(100% + 10px);right:0;width:min(268px,calc(100vw - 32px));direction:rtl;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:6px;box-shadow:var(--shadow);opacity:0;visibility:hidden;transform:translateY(-12px);transition:.2s}
+.menu.open{opacity:1;visibility:visible;transform:none}
+.mitem{display:flex;align-items:center;gap:12px;width:100%;padding:12px;border-radius:11px;text-align:start;font-weight:500;font-size:15px}
+.mitem:hover{background:var(--surface-2)}
+.mitem .e{width:26px;text-align:center;font-size:20px}
+
+.wrap{max-width:640px;margin:0 auto;padding:72px 16px 48px;display:flex;flex-direction:column;gap:16px}
+.tabs{display:grid;grid-template-columns:1fr 1fr;gap:4px;padding:4px;background:var(--surface);border:1px solid var(--line);border-radius:14px}
+.tab{height:42px;border-radius:10px;font-weight:700;color:var(--muted);display:flex;align-items:center;justify-content:center;gap:8px}
+.tab[aria-selected="true"]{background:var(--accent);color:var(--accent-ink)}
+.tab .n{font-size:12px;padding:1px 8px;border-radius:99px;background:rgba(127,127,127,.22)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:14px}
+.card h2{font-size:16px;font-weight:800}
+.chead{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
+.mini{display:flex;gap:2px;padding:3px;background:var(--surface-2);border:1px solid var(--line);border-radius:99px}
+.mini button{height:30px;padding:0 13px;display:inline-flex;align-items:center;justify-content:center;border-radius:99px;font-size:13.5px;font-weight:800;color:var(--accent);opacity:.6}
+.mini button[aria-selected="true"]{background:var(--accent-soft);box-shadow:inset 0 0 0 1px var(--accent);opacity:1}
+textarea{display:block;width:100%;min-height:104px;resize:vertical;background:var(--surface-2);border:1px solid var(--line);border-radius:12px;padding:12px;color:var(--fg);font:500 16px/1.6 var(--font-ui)}
+.ff{display:flex;flex-direction:column;gap:12px}
+.ff label{display:block;font-size:12px;color:var(--muted);margin-bottom:4px}
+.ff input{display:block;width:100%;height:46px;background:var(--surface-2);border:1px solid var(--line);border-radius:12px;padding:0 12px;color:var(--fg);font:500 16px var(--font-ui)}
+.ver{text-align:center;font-size:12px;color:var(--muted);padding:4px 0 0}
+.foot{display:flex;align-items:center;gap:12px;margin-top:10px}
+.hint{flex:1;font-size:12px;color:var(--muted)}
+.hint.err{color:var(--bad)}
+.save{flex:none;height:42px;padding-inline:24px;border-radius:12px;background:var(--accent);color:var(--accent-ink);font-weight:800}
+
+#list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.item{background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.item.open{border-color:var(--accent)}
+.row{display:flex;align-items:center;gap:10px;padding:10px 12px;cursor:pointer;min-height:56px}
+.en{flex:0 1 auto;max-width:46%;direction:ltr;font-weight:700;font-size:17px;color:var(--accent);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ar{flex:1 1 0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.snd{flex:none;width:36px;height:36px;border-radius:50%;background:var(--accent-soft);display:grid;place-items:center}
+.cat{flex:none;max-width:76px;font-size:12px;color:var(--muted);background:var(--surface-2);border:1px solid var(--line);padding:2px 10px;border-radius:99px}
+.detail{display:grid;grid-template-rows:0fr;transition:.3s}
+.item.open .detail{grid-template-rows:1fr}
+.detail-in{overflow:hidden}
+.detail-pad{display:flex;flex-direction:column;gap:12px;padding:12px 14px 14px;border-top:1px solid var(--line)}
+.d-word{direction:ltr;font-weight:800;font-size:24px;color:var(--accent)}
+.pbtn{height:36px;padding-inline:12px;border-radius:10px;background:var(--surface-2);border:1px solid var(--line);font-size:13px;font-weight:700}
+.lbl{font-size:12px;color:var(--muted);margin-bottom:2px}
+.val.note{padding:10px 12px;background:var(--surface-2);border-radius:10px}
+.nl{white-space:pre-wrap;text-align:start;line-height:1.8}
+.del{height:36px;padding-inline:14px;border-radius:10px;border:1px solid var(--line);color:var(--bad);font-size:13px;font-weight:700}
+.empty{padding:28px;text-align:center;color:var(--muted);background:var(--surface);border:1px dashed var(--line);border-radius:14px}
+.catopts{display:flex;flex-wrap:wrap;gap:6px}
+.copt{height:34px;padding-inline:14px;border-radius:99px;border:1px solid var(--line);background:var(--surface-2);font-size:13px;font-weight:700}
+.copt[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft);color:var(--accent)}
+.acts{display:flex;flex-wrap:wrap;gap:8px}
+
+/* Advanced Dashboard Hero & Galaxy Map */
+.dashboard-hero {
+  background: linear-gradient(135deg, var(--surface) 0%, var(--surface-2) 100%);
+  border: 1px solid var(--accent);
+  border-radius: 20px;
+  padding: 20px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.dash-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.badge-level { display: inline-flex; align-items: center; gap: 6px; background: var(--accent-soft); border: 1px solid var(--accent); color: var(--accent); padding: 6px 14px; border-radius: 99px; font-weight: 800; font-size: 13px; }
+.xp-counter { font-size: 14px; font-weight: 700; color: var(--muted); }
+.xp-bar-wrap { background: var(--surface-2); border-radius: 99px; height: 8px; overflow: hidden; border: 1px solid var(--line); }
+.xp-bar-fill { background: linear-gradient(90deg, var(--accent), var(--good)); height: 100%; border-radius: 99px; }
+.ai-tip-box { background: var(--surface-2); border: 1px solid var(--line); border-right: 4px solid var(--accent); border-radius: 12px; padding: 12px 14px; font-size: 13.5px; line-height: 1.7; display: flex; align-items: flex-start; gap: 10px; }
+
+.galaxy-container { display: flex; flex-direction: column; gap: 16px; }
+.galaxy-planet { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 16px; position: relative; overflow: hidden; }
+.galaxy-planet::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, var(--accent), var(--good)); }
+.planet-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.planet-title-wrap { display: flex; align-items: center; gap: 8px; }
+.planet-name { font-size: 15px; font-weight: 800; }
+.planet-count { background: var(--surface-2); border: 1px solid var(--line); padding: 2px 10px; border-radius: 99px; font-size: 12px; font-weight: 700; color: var(--muted); }
+.star-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.star-chip { display: inline-flex; align-items: center; gap: 6px; direction: ltr; padding: 6px 14px; border-radius: 99px; background: var(--surface-2); border: 1px solid var(--line); color: var(--accent); font-weight: 700; font-size: 13px; cursor: pointer; }
+.star-chip:hover { background: var(--accent-soft); border-color: var(--accent); }
+
+.scrim{position:fixed;inset:0;z-index:40;background:var(--overlay);opacity:0;transition:.25s;pointer-events:none}
+.scrim.open{opacity:1;pointer-events:auto}
+.sheet{position:fixed;z-index:41;left:50%;bottom:0;width:min(640px,100%);max-height:88vh;display:flex;flex-direction:column;background:var(--bg);border:1px solid var(--line);border-bottom:0;border-radius:22px 22px 0 0;transform:translate(-50%,102%);transition:.34s}
+.sheet.open{transform:translate(-50%,0)}
+.sheet-head{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--line)}
+.sheet-body{overflow:auto;padding:16px;display:flex;flex-direction:column;gap:16px}
+.sec-t{font-size:13px;font-weight:700;color:var(--muted);margin-bottom:8px}
+.tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.tile{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px;text-align:center}
+.tile b{display:block;font-size:24px;font-weight:800}
+.tile span{font-size:12px;color:var(--muted)}
+.cols{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;height:128px;padding:12px 8px 8px;background:var(--surface);border:1px solid var(--line);border-radius:14px}
+.col{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:4px}
+.col .v{font-size:11px;color:var(--muted)}
+.col .b{width:100%;max-width:26px;border-radius:6px 6px 3px 3px;background:var(--accent);min-height:3px}
+.col .d{font-size:10px;color:var(--muted)}
+.seg{display:flex;flex-wrap:wrap;gap:8px}
+.sbtn{height:40px;padding-inline:14px;border-radius:12px;border:1px solid var(--line);background:var(--surface);font-weight:700;font-size:14px}
+
+.toast{position:fixed;left:50%;bottom:24px;z-index:60;transform:translate(-50%,20px);opacity:0;pointer-events:none;background:var(--fg);color:var(--bg);padding:10px 18px;border-radius:99px;font-weight:700;font-size:14px;transition:.2s}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+</style>
+</head>
+<body>
+<div id="app" dir="rtl">
+  <header class="bar" id="bar">
+    <div class="bar-in" dir="ltr">
+      <div class="left">
+        <button class="ibtn" id="btnSearch" aria-label="بحث"><svg class="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg><svg class="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+        <button class="ibtn" id="btnTheme" aria-label="تبديل الوضع"></button>
+        <div class="sfield" id="sfield" inert>
+          <div class="pill"><input id="q" type="text" dir="auto" placeholder="ابحث في دفترك"></div>
+        </div>
+      </div>
+      <div class="title"><b>Enotes</b></div>
+      <div class="menu-anchor">
+        <button class="ibtn" id="btnMenu" aria-label="القائمة"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+        <div class="menu" id="menu" role="menu">
+          <button class="mitem" role="menuitem" data-sheet="stats"><span class="e">✨</span>لوحة تحكم الذكاء والتمكن</button>
+          <button class="mitem" role="menuitem" data-sheet="map"><span class="e">🌌</span>مجرة المعاني والكواكب</button>
+          <button class="mitem" role="menuitem" data-sheet="review"><span class="e">🧠</span>المراجعة والبطاقات</button>
+          <button class="mitem" role="menuitem" data-sheet="quiz"><span class="e">🎯</span>الاختبار الذكي</button>
+          <button class="mitem" role="menuitem" data-sheet="accent"><span class="e">🇬🇧</span>اللهجات والنطق</button>
+          <button class="mitem" role="menuitem" data-sheet="backup"><span class="e">💾</span>النسخ الاحتياطي</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <div class="tabs" role="tablist">
+      <button class="tab" role="tab" data-tab="words" aria-selected="true">كلماتي <span class="n" id="nWords">0</span></button>
+      <button class="tab" role="tab" data-tab="idioms" aria-selected="false">Idioms <span class="n" id="nIdioms">0</span></button>
+    </div>
+
+    <section class="card">
+      <div class="chead">
+        <div class="mini" role="tablist">
+          <button type="button" role="tab" aria-selected="true" data-p="free"><span>كتابة حرة</span></button>
+          <button type="button" role="tab" aria-selected="false" data-p="form"><span>حقول</span></button>
+        </div>
+        <h2>📝 ورقة جديدة</h2>
+      </div>
+      <div id="pFree">
+        <textarea id="note" dir="auto" placeholder="write your thoughts here...."></textarea>
+        <div class="foot">
+          <div class="hint" id="hint"></div>
+          <button class="save" id="btnSave">احفظ</button>
+        </div>
+      </div>
+      <div id="pForm" hidden>
+        <div class="ff">
+          <div><label>الكلمة الإنجليزية</label><input id="fEn" type="text" dir="ltr" placeholder="word"></div>
+          <div><label>الرسم الصوتي</label><input id="fPh" type="text" dir="ltr" placeholder="/wɜːrd/"></div>
+          <div><label>المعنى</label><input id="fAr" type
