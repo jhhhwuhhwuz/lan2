@@ -208,6 +208,7 @@ textarea{display:block;width:100%;min-height:104px;resize:vertical;background:va
           <button class="mitem" role="menuitem" data-sheet="quiz"><span class="e">🎯</span>الاختبار الذكي</button>
           <button class="mitem" role="menuitem" data-sheet="accent"><span class="e">🇬🇧</span>اللهجات والنطق</button>
           <button class="mitem" role="menuitem" data-sheet="backup"><span class="e">💾</span>النسخ الاحتياطي</button>
+          <button class="mitem" role="menuitem" data-sheet="account"><span class="e">👤</span>الحساب والمزامنة</button>
         </div>
       </div>
     </div>
@@ -238,4 +239,68 @@ textarea{display:block;width:100%;min-height:104px;resize:vertical;background:va
         <div class="ff">
           <div><label>الكلمة الإنجليزية</label><input id="fEn" type="text" dir="ltr" placeholder="word"></div>
           <div><label>الرسم الصوتي</label><input id="fPh" type="text" dir="ltr" placeholder="/wɜːrd/"></div>
-          <div><label>المعنى</label><input id="fAr" type
+          <div><label>المعنى</label><input id="fAr" type="text" dir="auto" placeholder="المعنى بالعربي"></div>
+          <div><label>مثال أو شرح</label><textarea id="fEx" dir="auto" placeholder="example"></textarea></div>
+          <div><label>التصنيف</label><div class="catopts" id="fCats"></div></div>
+        </div>
+        <div class="foot">
+          <div class="hint" id="hint2"></div>
+          <button class="save" id="btnSave2">احفظ</button>
+        </div>
+      </div>
+    </section>
+
+    <ul id="list"></ul>
+    <div class="ver">تحديث 2.0 - النسخة الذكية المتطورة</div>
+  </main>
+
+  <div class="scrim" id="scrim" hidden></div>
+  <section class="sheet" id="sheet" role="dialog" hidden>
+    <div class="sheet-head">
+      <h2 id="sheetTitle"></h2>
+      <button class="ibtn" id="sheetClose" aria-label="إغلاق"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    </div>
+    <div class="sheet-body" id="sheetBody"></div>
+  </section>
+  <div class="toast" id="toast"></div>
+</div>
+
+<script>
+(function(){
+'use strict';
+var $=function(s,r){return (r||document).querySelector(s)};
+var $$=function(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))};
+var root=document.documentElement;
+var esc=function(s){return String(s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})};
+var store={
+  get:function(k,d){try{var v=localStorage.getItem(k);if(v!==null)return JSON.parse(v)}catch(e){}return d},
+  set:function(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+};
+var DAY=86400000;
+var MOON='<svg viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z"/></svg>';
+var SUN='<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>';
+var SPK='<svg viewBox="-0.75 0 24 24"><path d="M11 5L6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 010 7M18.5 5.5a9 9 0 010 13"/></svg>';
+var CATS=['اسم','فعل','صفة','ضمير','حرف جر','ظرف/حال','روابط'];
+var ICATS=['رسمية','غير رسمية'];
+function catsFor(t){return t==='idiom'?ICATS:CATS}
+
+var seed=[
+  ['serendipity','صدفة سعيدة','اسم','Finding that old letter was pure serendipity.','word','/ˌserənˈdɪpəti/'],
+  ['resilient','مرن وقادر على التعافي','صفة','Children are often more resilient than we expect.','word','/rɪˈzɪliənt/'],
+  ['procrastinate','يماطل ويؤجّل','فعل','Stop procrastinating and start the report.','word','/prəˈkræstɪneɪt/'],
+  ['meticulous','دقيق جدًا في التفاصيل','صفة','She is meticulous about her notes.','word','/məˈtɪkjələs/'],
+  ['ubiquitous','منتشر في كل مكان','صفة','Smartphones are ubiquitous now.','word','/juːˈbɪkwɪtəs/'],
+  ['break the ice','كسر الجمود في اللقاء','غير رسمية','A joke is a good way to break the ice.','idiom'],
+  ['piece of cake','شيء سهل جدًا','غير رسمية','The exam was a piece of cake.','idiom']
+];
+var t0=Date.now();
+var items=store.get('wb.items',null);
+if(!Array.isArray(items)){items=seed.map(function(s,i){return {id:'s'+i,en:s[0],ar:s[1],cat:s[2],notes:s[3],type:s[4],ph:s[5]||'',ts:t0-i*3600000,ex:true}});store.set('wb.items',items);}
+var theme=store.get('wb.theme','dark');
+var tab='words', query='', current=null, quiz=null, fc=null;
+function persist(){store.set('wb.items',items)}
+var toastT;
+function toast(msg){var t=$('#toast');t.textContent=msg;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(function(){t.classList.remove('show')},1900)}
+
+function applyTheme(){root.setAttribute('data-theme',theme);$('#btnTheme').innerHTML=theme==='dark'?MOON:SUN}
+$('#btnTheme').addEventListener('click',function(){theme=theme==='dark'?'light':'dark';store.set('wb.theme',theme);applyTheme(
